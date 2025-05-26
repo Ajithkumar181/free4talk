@@ -1,86 +1,139 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
+import { io } from 'socket.io-client';
 
-const GOOGLE_CLIENT_ID = '677069097968-qmcsi08dgufmsj1i9iopiljlcojceusc.apps.googleusercontent.com';
+const SOCKET_SERVER_URL = 'http://localhost:5000';
+const user_id = '1';
 
-export default function GoogleLogin() {
-  const [userData, setUserData] = useState(null); // Store server response
-  const [error, setError] = useState(null);
+const styles = {
+  app: {
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    background:
+      "linear-gradient(135deg, #833ab4 0%, #fd1d1d 50%, #fcb045 100%)",
+    minHeight: '100vh',
+    color: '#fff',
+    padding: '2rem',
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  header: {
+    fontWeight: '700',
+    fontSize: '2.5rem',
+    marginBottom: '0.25rem',
+    textShadow: '1px 1px 4px rgba(0,0,0,0.6)',
+  },
+  subheader: {
+    fontSize: '1.1rem',
+    fontWeight: '500',
+    marginBottom: '1.5rem',
+    textShadow: '1px 1px 3px rgba(0,0,0,0.4)',
+  },
+  list: {
+    background: 'rgba(255, 255, 255, 0.15)',
+    borderRadius: '15px',
+    padding: '1.5rem',
+    maxWidth: '600px',
+    width: '100%',
+    boxShadow: '0 8px 30px rgba(0,0,0,0.12)',
+    overflowY: 'auto',
+    maxHeight: '70vh',
+  },
+  listItem: {
+    background: 'rgba(255, 255, 255, 0.2)',
+    marginBottom: '1rem',
+    borderRadius: '12px',
+    padding: '1rem',
+    boxShadow: 'inset 0 0 8px rgba(255,255,255,0.25)',
+  },
+  userTitle: {
+    fontWeight: '700',
+    marginBottom: '0.5rem',
+    fontSize: '1.1rem',
+    color: '#fdf497',
+  },
+  detailList: {
+    listStyleType: 'none',
+    paddingLeft: '1rem',
+    margin: 0,
+  },
+  detailItem: {
+    fontSize: '0.95rem',
+    marginBottom: '0.3rem',
+    color: '#fff',
+  },
+  noUpdates: {
+    textAlign: 'center',
+    fontStyle: 'italic',
+    color: '#f8f8f8aa',
+  },
+};
 
-  // Use useCallback to avoid redefining the handler on every render
-  const handleCredentialResponse = useCallback(async (response) => {
-    try {
-      setError(null);
-      const idToken = response.credential;
-
-      const res = await fetch('http://localhost:5000/users/google-login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken }),
-      });
-
-      if (!res.ok) {
-        const errorResponse = await res.json().catch(() => ({}));
-        setError(errorResponse.error || 'Login failed');
-        setUserData(null);
-        return;
-      }
-
-      const data = await res.json();
-      setUserData(data);
-    } catch (err) {
-      setError('An unexpected error occurred');
-      setUserData(null);
-      console.error(err);
-    }
-  }, []);
+function App() {
+  const [statusUpdates, setStatusUpdates] = useState([]);
 
   useEffect(() => {
-    // Add script only once
-    const script = document.createElement('script');
-    script.src = 'https://accounts.google.com/gsi/client';
-    script.async = true;
-    script.defer = true;
-    document.body.appendChild(script);
+    const socket = io(SOCKET_SERVER_URL, {
+      withCredentials: true,
+      transports: ['websocket'],
+    });
 
-    script.onload = () => {
-      if (window.google?.accounts?.id) {
-        window.google.accounts.id.initialize({
-          client_id: GOOGLE_CLIENT_ID,
-          callback: handleCredentialResponse,
-        });
+    socket.on('connect', () => {
+      console.log('✅ Connected to socket:', socket.id);
+      socket.emit('user-online', user_id);
+    });
 
-        window.google.accounts.id.renderButton(
-          document.getElementById('googleSignInDiv'),
-          { theme: 'outline', size: 'large' }
-        );
+    const heartbeatInterval = setInterval(() => {
+      socket.emit('heartbeat', user_id);
+      console.log('❤️ Sent heartbeat');
+    }, 10000);
 
-        // Optional: Uncomment if you want the One Tap prompt automatically
-        // window.google.accounts.id.prompt();
-      }
+    socket.on('user-status-update', (data) => {
+      console.log('📩 Received user status update:', data);
+      setStatusUpdates((prev) => {
+        const filtered = prev.filter((u) => u.user_id !== data.user_id);
+        return [data, ...filtered];
+      });
+    });
+
+    const handleBeforeUnload = () => {
+      socket.emit('user-offline', user_id);
     };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
-      // Cleanup script on unmount
-      document.body.removeChild(script);
+      clearInterval(heartbeatInterval);
+      socket.emit('user-offline', user_id);
+      socket.disconnect();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
     };
-  }, [handleCredentialResponse]);
+  }, []);
 
   return (
-    <div>
-      <h2>Sign in with Google</h2>
-      <div id="googleSignInDiv"></div>
-
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-
-      {userData && (
-        <div style={{ marginTop: '20px' }}>
-          <h3>Login Successful!</h3>
-          <p><strong>Username:</strong> {userData.username}</p>
-          <p><strong>Email:</strong> {userData.email}</p>
-          <p><strong>User ID:</strong> {userData.userId}</p>
-          <p><strong>Token:</strong> <code>{userData.token}</code></p>
-        </div>
-      )}
+    <div style={styles.app}>
+      <h1 style={styles.header}>🟢 Online Status Tracker</h1>
+      <p style={styles.subheader}>Logged-in User ID: {user_id}</p>
+      <h2 style={{ ...styles.subheader, marginTop: 0 }}>Live User Status Updates:</h2>
+      <ul style={styles.list}>
+        {statusUpdates.length === 0 ? (
+          <li style={styles.noUpdates}>No updates received yet.</li>
+        ) : (
+          statusUpdates.map((update) => (
+            <li key={update.user_id} style={styles.listItem}>
+              <div style={styles.userTitle}>User {update.user_id} status:</div>
+              <ul style={styles.detailList}>
+                {Object.entries(update).map(([key, value]) => (
+                  <li key={key} style={styles.detailItem}>
+                    <strong>{key}:</strong> {String(value)}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))
+        )}
+      </ul>
     </div>
   );
 }
+
+export default App;
