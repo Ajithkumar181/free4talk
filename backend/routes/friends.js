@@ -182,4 +182,40 @@ router.get('/friends/:userId', async (req, res) => {
 });
 
 
+// POST /api/chat/can-chat
+router.post('/can-chat', async (req, res) => {
+  const { userA, userB } = req.body;
+
+  if (!userA || !userB) {
+    return res.status(400).json({ error: 'Missing user IDs' });
+  }
+
+  try {
+    // Check for accepted friendship
+    const [friends] = await db.query(
+      `SELECT * FROM friends
+       WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))
+       AND status = 'accepted'`,
+      [userA, userB, userB, userA]
+    );
+
+    // Check for block status
+    const [blocked] = await db.query(
+      `SELECT * FROM friends
+       WHERE ((user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?))
+       AND status = 'blocked'`,
+      [userA, userB, userB, userA]
+    );
+
+    if (friends.length > 0 && blocked.length === 0) {
+      return res.json({ canChat: true });
+    } else {
+      return res.status(403).json({ canChat: false, message: 'Chat not allowed' });
+    }
+  } catch (err) {
+    console.error('Error checking chat permission:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

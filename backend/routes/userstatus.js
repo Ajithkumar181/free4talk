@@ -144,7 +144,21 @@ async function getUserStatus(user_id) {
   }
 }
 
-
+//get all users
+async function getUsersOnline() {
+  try {
+    const [rows] = await db.query(
+      `SELECT user_id, is_online, status_message, last_active_at, updated_at
+       FROM user_status
+       WHERE is_online = 1`
+    );
+    // rows is an array of user status objects currently online
+    return rows;
+  } catch (error) {
+    console.error('Error fetching online users:', error);
+    return [];
+  }
+}
 
 
 module.exports = {
@@ -153,6 +167,7 @@ module.exports = {
   setUserOffline,
   updateLastActive,
   setStatusMessage,
-  getUserStatus 
+  getUserStatus,
+  getUsersOnline 
 };
 
