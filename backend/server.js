@@ -15,6 +15,9 @@ const {
   getUsersOnline 
 } = require('./routes/userstatus');
 const friendRoutes = require('./routes/friends');
+const groupRoutes = require('./routes/group');
+const groupmemberRoutes = require('./routes/groupmember');
+
 const app = express();
 const server = http.createServer(app);
 
@@ -36,6 +39,8 @@ app.use(express.json());
 app.use('/users', userRoutes);
 app.use('/userstatus', userStatusRouter);
 app.use('/friends', friendRoutes);
+app.use('/group', groupRoutes);
+app.use('/groupMembers', groupmemberRoutes);
 
 io.on('connection', async (socket) => {
   console.log('🔌 New client connected:', socket.id, 'Transport:', socket.conn.transport.name);

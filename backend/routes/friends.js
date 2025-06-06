@@ -182,6 +182,7 @@ router.get('/friends/:userId', async (req, res) => {
 });
 
 
+//### 5. Control Chat Permissions Based on Friendships
 // POST /api/chat/can-chat
 router.post('/can-chat', async (req, res) => {
   const { userA, userB } = req.body;

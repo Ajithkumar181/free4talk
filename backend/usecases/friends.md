@@ -40,6 +40,22 @@ CREATE TABLE friends (
     * `created_at` timestamp
   * This represents a pending friend request waiting for User B’s response.
   * **Validation:** Prevent duplicate or existing friend requests or friendships.
+Sure! Here are just the **headings** for the frontend use cases of **Send Friend Request**:
+
+---
+
+### Frontend Use Cases for Send Friend Request
+
+1. User clicks "Add Friend" button on another user's profile
+2. User tries to send request to themselves
+3. User tries to send a request when already friends or pending
+4. User views a list of users and can send friend requests
+5. Handle network errors or server errors
+6. Real-time UI update after sending request
+
+---
+
+Let me know if you want me to expand any of these!
 
 ---
 
@@ -56,7 +72,21 @@ CREATE TABLE friends (
   * This depends on whether friendship is stored bidirectionally.
   * Both users are now recognized as friends.
 
+---Sure! Here are just the headings for frontend use cases of **Accept Friend Request**:
+
 ---
+
+### Frontend Use Cases for Accept Friend Request
+
+1. User B views incoming friend requests list
+2. User B clicks "Accept" button on a friend request
+3. UI feedback after accepting
+4. Handling reject or ignore
+5. Real-time update for User A
+6. Error handling
+
+---
+
 
 ### 3. Block/Unblock Users
 
@@ -71,8 +101,23 @@ CREATE TABLE friends (
 
   * Backend deletes or updates the record to remove the blocked status.
   * Restores ability to interact.
+  
+  Got it! Here are the **most essential** frontend use cases for **Blocking / Unblocking Users**:
 
 ---
+
+### Essential Frontend Use Cases for Blocking / Unblocking Users
+
+1. User clicks "Block" on another user’s profile or chat
+2. Confirm block action before proceeding
+3. Update UI and disable interaction with blocked user
+4. User views and manages blocked users list
+5. User clicks "Unblock" to restore interaction
+6. Show success/error notifications for block/unblock
+
+---
+
+
 
 ### 4. Fetch Mutual Friends and Friend Lists
 
@@ -83,6 +128,23 @@ CREATE TABLE friends (
 
   * Find intersection of two users’ accepted friends.
   * Useful for showing “Mutual Friends” on user profiles.
+  Sure! Here's a concise version of the frontend use cases:
+
+---
+
+### Frontend Use Cases for Fetching Friend Lists and Mutual Friends
+
+1. **Show User’s Friend List** on profile/dashboard with username and profile picture.
+2. **Display Mutual Friends** when viewing another user’s profile.
+3. **Suggest Friends** based on mutual connections.
+4. **Filter Social Feed** to show posts from friends only.
+5. **Quick Actions** like messaging or blocking from friend list.
+6. **Real-time Updates** to friend lists when friendships change.
+
+---
+
+Let me know if you want it even shorter or more detailed!
+
 
 ---
 
@@ -94,6 +156,30 @@ CREATE TABLE friends (
   * Check neither user has blocked the other.
 * Deny chat requests if friendship or permission conditions are not met.
 * Ensures privacy and security in messaging.
+ Sure! Here's a short version you can paste directly:
+
+---
+
+### ✅ Where to Use Chat Permission Check (Frontend)
+
+1. **Profile Page**
+   Show/Hide "Send Message" button based on permission.
+
+2. **Chat Page**
+   Before opening chat, call `/can-chat`. Block if not allowed.
+
+3. **Friend List / Suggestions**
+   Enable chat icon only if friendship is accepted and not blocked.
+
+4. **Chat Popup**
+   Show message instead of input box if chat isn’t allowed.
+
+5. **Reply to Notifications**
+   Block reply if permission check fails.
+
+---
+
+Use `/can-chat` API to enforce rules and enhance privacy.
 
 ---
 

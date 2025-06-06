@@ -51,6 +51,24 @@ The system accurately reflects which users are online or offline in real time.
 
 ---
 
+Here are short and memorable **use cases** to call **Set Online/Offline Status** functions:
+
+---
+
+
+#### 🔹 When to call:
+
+1. **User logs in** → mark user as online.
+2. **User logs out** → mark user as offline.
+3. **Socket.IO connects** → set user online automatically.
+4. **Socket.IO disconnects** → set user offline.
+5. **App closed / tab closed** → trigger offline via socket disconnect.
+
+---
+
+Let me know if you need sample code or frontend triggers too.
+
+
 ### ✅ Use Case 2: Update Last Active Timestamp
 
 Tracks user activity to support “last seen” and inactivity detection.
@@ -70,6 +88,14 @@ WHERE user_id = ?;
 #### 📈 Result:
 
 The UI can show “Last seen at X time” for offline users.
+Sure! Here’s a super short version to remember:
+usecases:
+1. Show last seen time
+2. Auto-logout inactive users
+3. Sort chats by activity
+4. Send inactivity reminders
+5. Track user engagement stats
+
 
 ---
 
@@ -89,6 +115,14 @@ UPDATE user_status
 SET status_message = ?, updated_at = CURRENT_TIMESTAMP
 WHERE user_id = ?;
 ```
+Sure! Here’s a very short, note-style list for **Set Custom Status Message** use cases:
+Usecases:
+* User manually updates status (e.g., Busy, In a meeting)
+* Do Not Disturb mode activated
+* Scheduled away/holiday status set
+* Joins/leaves event or meeting
+* Clears or resets status message
+
 
 #### 📈 Result:
 
